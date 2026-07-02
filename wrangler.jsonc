@@ -2,6 +2,7 @@
   // Конфигурация деплоя на Cloudflare Workers (Static Assets).
   // Worker без кода — раздаёт готовую статику из dist/.
   "name": "road-guard",
+  "account_id": "c503af5b306ddcc58b1ade9d50a19281",
   "compatibility_date": "2024-11-01",
   // Публиковать на бесплатный поддомен *.workers.dev.
   "workers_dev": true,
