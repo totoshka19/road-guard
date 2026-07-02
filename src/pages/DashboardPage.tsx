@@ -1,9 +1,10 @@
 import { useAppSelector } from '../app/hooks'
 import { CITY } from '../data/city'
+import { CityMap } from '../components/map/CityMap'
 
 export function DashboardPage() {
   const cameraCount = useAppSelector((s) => s.cameras.items.length)
-  const violationCount = useAppSelector((s) => s.violations.items.length)
+  const isReady = useAppSelector((s) => s.cameras.status === 'ready')
 
   return (
     <div className="app-shell">
@@ -19,33 +20,26 @@ export function DashboardPage() {
         </div>
         <span className="status-pill">
           <span className="status-pill__dot" aria-hidden />
-          Этап&nbsp;1 · слой данных
+          Этап&nbsp;2 · карта камер
         </span>
       </header>
 
-      <main className="app-main">
-        <section className="placeholder">
-          <p className="placeholder__eyebrow">Слой данных подключён</p>
-          <h2 className="placeholder__title">Данные загружены в стор</h2>
-          <p className="placeholder__text">
-            Мок-источник отдал камеры и историю нарушений через интерфейс
-            DataSource. Дальше — карта&nbsp;MapLibre и живой поток событий.
+      <main className="app-main app-main--map">
+        <CityMap />
+        <div className="map-overlay">
+          <p className="map-overlay__eyebrow">Камеры фотовидеофиксации</p>
+          <p className="map-overlay__count">
+            {isReady ? cameraCount : '…'}
+            <span className="map-overlay__unit"> на карте</span>
           </p>
-          <div className="stat-row">
-            <div className="stat">
-              <span className="stat__value">{cameraCount}</span>
-              <span className="stat__label">камер</span>
-            </div>
-            <div className="stat">
-              <span className="stat__value">{violationCount}</span>
-              <span className="stat__label">событий в буфере</span>
-            </div>
-          </div>
-        </section>
+          <p className="map-overlay__hint">
+            Клик по кластеру — приблизить, по камере — детали
+          </p>
+        </div>
       </main>
 
       <footer className="app-footer">
-        <span>RoadGuard · портфолио-проект</span>
+        <span>RoadGuard · портфолио-проект · {CITY.name}</span>
       </footer>
     </div>
   )
