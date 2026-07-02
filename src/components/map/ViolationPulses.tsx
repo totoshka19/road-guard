@@ -3,6 +3,7 @@ import { Marker } from 'react-map-gl/maplibre'
 import gsap from 'gsap'
 import { useAppSelector } from '../../app/hooks'
 import { VIOLATION_TYPES } from '../../data/city'
+import { selectFilteredViolations } from '../../features/stats/selectors'
 import type { Violation } from '../../data/types'
 
 /** Событие считается «новым» (достойным пульса), если моложе этого возраста. */
@@ -57,7 +58,7 @@ function PulseMarker({
  * история из 120 seed-событий не вызывает залп пульсов на старте.
  */
 export function ViolationPulses() {
-  const items = useAppSelector((s) => s.violations.items)
+  const items = useAppSelector(selectFilteredViolations)
   const pulsedRef = useRef<Set<string>>(new Set())
   const [active, setActive] = useState<Violation[]>([])
 

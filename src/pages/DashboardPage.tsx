@@ -1,13 +1,27 @@
-import { useAppSelector } from '../app/hooks'
+import { useEffect } from 'react'
+import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { CITY } from '../data/city'
 import { CityMap } from '../components/map/CityMap'
-import { ViolationFeed } from '../features/violations/ViolationFeed'
+import { Sidebar } from '../components/Sidebar'
 import { PlaybackControls } from '../features/playback/PlaybackControls'
+import { HeatmapToggle } from '../features/ui/HeatmapToggle'
 import { useViolationStream } from '../features/playback/useViolationStream'
+import { tick } from '../features/ui/uiSlice'
+
+/** Как часто обновляем общее «сейчас» для фильтров по времени и динамики. */
+const CLOCK_INTERVAL_MS = 5000
 
 export function DashboardPage() {
+  const dispatch = useAppDispatch()
+
   // Подключаем «живой» поток нарушений к стору на всё время жизни дашборда.
   useViolationStream()
+
+  // Единый тикер времени: один источник now для reselect-селекторов.
+  useEffect(() => {
+    const id = setInterval(() => dispatch(tick(Date.now())), CLOCK_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [dispatch])
 
   const cameraCount = useAppSelector((s) => s.cameras.items.length)
   const isReady = useAppSelector((s) => s.cameras.status === 'ready')
@@ -26,7 +40,7 @@ export function DashboardPage() {
         </div>
         <span className="status-pill">
           <span className="status-pill__dot" aria-hidden />
-          Этап&nbsp;3 · живой поток
+          Этап&nbsp;4 · фильтры и статистика
         </span>
       </header>
 
@@ -43,9 +57,10 @@ export function DashboardPage() {
               Клик по кластеру — приблизить, по камере — детали
             </p>
           </div>
+          <HeatmapToggle />
           <PlaybackControls />
         </main>
-        <ViolationFeed />
+        <Sidebar />
       </div>
 
       <footer className="app-footer">
