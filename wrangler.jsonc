@@ -6,6 +6,6 @@
   "assets": {
     "directory": "./dist",
     // Отдаём index.html на любой неизвестный путь (нужно для SPA-роутинга).
-    "not_found_handling": "single-page-application"
-  }
+    "not_found_handling": "single-page-application",
+  },
 }
