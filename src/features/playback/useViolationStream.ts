@@ -17,10 +17,11 @@ export function useViolationStream(): void {
 
   useEffect(() => {
     if (!playing) return
-    const unsubscribe = dataSource.subscribe(
+    // Функция отписки, которую вернул subscribe, становится cleanup эффекта:
+    // React вызовет её при паузе, смене скорости или размонтировании.
+    return dataSource.subscribe(
       (violation) => dispatch(addViolation(violation)),
       { speed },
     )
-    return unsubscribe
   }, [dispatch, playing, speed])
 }
