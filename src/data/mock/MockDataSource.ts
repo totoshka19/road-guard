@@ -13,11 +13,12 @@ const BURST_CHANCE = 0.15 // шанс всплеска
 const BURST_SIZE = 4
 
 function matchesFilters(v: Violation, f: ViolationFilters): boolean {
-  if (f.types && !f.types.includes(v.type)) return false
-  if (f.districts && !f.districts.includes(v.district)) return false
-  if (f.since !== undefined && v.timestamp < f.since) return false
-  if (f.until !== undefined && v.timestamp > f.until) return false
-  return true
+  return (
+    (!f.types || f.types.includes(v.type)) &&
+    (!f.districts || f.districts.includes(v.district)) &&
+    (f.since === undefined || v.timestamp >= f.since) &&
+    (f.until === undefined || v.timestamp <= f.until)
+  )
 }
 
 /**
