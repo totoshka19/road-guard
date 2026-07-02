@@ -70,4 +70,6 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # 4.x умеет деплоить assets-only воркеры; дефолтная 3.90 — нет.
+          wranglerVersion: '4.106.0'
           command: deploy
