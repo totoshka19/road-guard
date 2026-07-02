@@ -5,7 +5,8 @@ import type { AppStore } from './store'
 
 /**
  * Начальная загрузка данных (аналог REST-запросов при старте):
- * камеры + история нарушений. Поток новых событий подключим на этапе 3.
+ * камеры + история нарушений. Живой поток новых событий подключается
+ * отдельно — хук useViolationStream (features/playback).
  */
 export async function bootstrap(store: AppStore): Promise<void> {
   const [cameras, violations] = await Promise.all([

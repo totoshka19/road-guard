@@ -64,6 +64,19 @@ export const unclusteredLayer: LayerProps = {
   },
 }
 
+/** Точка-нарушение. Цвет берётся из свойства фичи (по типу нарушения). */
+export const violationLayer: LayerProps = {
+  id: 'violations',
+  type: 'circle',
+  paint: {
+    'circle-color': ['get', 'color'],
+    'circle-radius': 4,
+    'circle-opacity': 0.85,
+    'circle-stroke-width': 1,
+    'circle-stroke-color': 'rgba(11, 15, 23, 0.6)',
+  },
+}
+
 /**
  * Подсветка выбранной камеры. Фильтр по `id` зависит от выбора, поэтому
  * слой собирается функцией: literal-объект с `type: 'circle'` сужает union
