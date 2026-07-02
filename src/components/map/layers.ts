@@ -77,6 +77,32 @@ export const violationLayer: LayerProps = {
   },
 }
 
+/** Тепловая карта плотности нарушений (альтернатива точкам). */
+export const violationHeatmapLayer: LayerProps = {
+  id: 'violations-heat',
+  type: 'heatmap',
+  paint: {
+    'heatmap-radius': 24,
+    'heatmap-intensity': 1,
+    'heatmap-opacity': 0.75,
+    'heatmap-color': [
+      'interpolate',
+      ['linear'],
+      ['heatmap-density'],
+      0,
+      'rgba(14, 165, 233, 0)',
+      0.2,
+      'rgba(56, 189, 248, 0.5)',
+      0.4,
+      'rgba(34, 197, 94, 0.7)',
+      0.6,
+      'rgba(234, 179, 8, 0.85)',
+      1,
+      'rgba(244, 63, 94, 0.95)',
+    ],
+  },
+}
+
 /**
  * Подсветка выбранной камеры. Фильтр по `id` зависит от выбора, поэтому
  * слой собирается функцией: literal-объект с `type: 'circle'` сужает union

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAppSelector } from '../../app/hooks'
 import { VIOLATION_TYPES } from '../../data/city'
 import { formatRelativeTime } from '../../lib/formatRelativeTime'
+import { selectFilteredViolations } from '../stats/selectors'
 
 /** Сколько событий держим в DOM ленты (буфер в сторе больше). */
 const FEED_LIMIT = 60
@@ -17,18 +18,14 @@ function useNow(intervalMs: number): number {
 }
 
 export function ViolationFeed() {
-  const items = useAppSelector((s) => s.violations.items)
+  const items = useAppSelector(selectFilteredViolations)
   const now = useNow(1000)
   const visible = items.slice(0, FEED_LIMIT)
 
   return (
-    <aside className="feed">
-      <header className="feed__header">
-        <h2 className="feed__title">Лента событий</h2>
-        <span className="feed__count">{items.length}</span>
-      </header>
+    <div className="feed">
       {visible.length === 0 ? (
-        <p className="feed__empty">Ожидаем события…</p>
+        <p className="feed__empty">Нет событий под текущий фильтр</p>
       ) : (
         <ul className="feed__list">
           {visible.map((violation) => {
@@ -54,6 +51,6 @@ export function ViolationFeed() {
           })}
         </ul>
       )}
-    </aside>
+    </div>
   )
 }

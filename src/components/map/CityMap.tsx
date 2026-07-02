@@ -9,12 +9,14 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { selectCamera } from '../../features/cameras/camerasSlice'
 import { camerasToGeoJson } from '../../features/cameras/cameraGeoJson'
 import { recentViolationsToGeoJson } from '../../features/violations/violationGeoJson'
+import { selectFilteredViolations } from '../../features/stats/selectors'
 import { CITY } from '../../data/city'
 import {
   clusterCountLayer,
   clusterLayer,
   selectedLayer,
   unclusteredLayer,
+  violationHeatmapLayer,
   violationLayer,
 } from './layers'
 import { ViolationPulses } from './ViolationPulses'
@@ -30,7 +32,8 @@ const MAX_MAP_VIOLATIONS = 150
 export function CityMap() {
   const dispatch = useAppDispatch()
   const cameras = useAppSelector((s) => s.cameras.items)
-  const violations = useAppSelector((s) => s.violations.items)
+  const violations = useAppSelector(selectFilteredViolations)
+  const heatmap = useAppSelector((s) => s.ui.heatmap)
   const selectedId = useAppSelector((s) => s.cameras.selectedId)
   const mapRef = useRef<MapRef>(null)
   const [cursor, setCursor] = useState('grab')
@@ -118,9 +121,15 @@ export function CityMap() {
         <Layer {...selectedLayerStyle} />
       </Source>
 
-      {/* Нарушения из потока — точками поверх камер + GSAP-пульс на новые. */}
+      {/* Нарушения (с учётом фильтров): точки или тепловая карта.
+          Разные key — чтобы React пересоздал слой при переключении, а не
+          пытался сменить id у того же <Layer> (react-map-gl так не умеет). */}
       <Source id="violations" type="geojson" data={violationData}>
-        <Layer {...violationLayer} />
+        {heatmap ? (
+          <Layer key="violations-heat" {...violationHeatmapLayer} />
+        ) : (
+          <Layer key="violations-dots" {...violationLayer} />
+        )}
       </Source>
       <ViolationPulses />
 
