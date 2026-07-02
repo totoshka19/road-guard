@@ -1,8 +1,14 @@
 import { useAppSelector } from '../app/hooks'
 import { CITY } from '../data/city'
 import { CityMap } from '../components/map/CityMap'
+import { ViolationFeed } from '../features/violations/ViolationFeed'
+import { PlaybackControls } from '../features/playback/PlaybackControls'
+import { useViolationStream } from '../features/playback/useViolationStream'
 
 export function DashboardPage() {
+  // Подключаем «живой» поток нарушений к стору на всё время жизни дашборда.
+  useViolationStream()
+
   const cameraCount = useAppSelector((s) => s.cameras.items.length)
   const isReady = useAppSelector((s) => s.cameras.status === 'ready')
 
@@ -20,23 +26,27 @@ export function DashboardPage() {
         </div>
         <span className="status-pill">
           <span className="status-pill__dot" aria-hidden />
-          Этап&nbsp;2 · карта камер
+          Этап&nbsp;3 · живой поток
         </span>
       </header>
 
-      <main className="app-main app-main--map">
-        <CityMap />
-        <div className="map-overlay">
-          <p className="map-overlay__eyebrow">Камеры фотовидеофиксации</p>
-          <p className="map-overlay__count">
-            {isReady ? cameraCount : '…'}
-            <span className="map-overlay__unit"> на карте</span>
-          </p>
-          <p className="map-overlay__hint">
-            Клик по кластеру — приблизить, по камере — детали
-          </p>
-        </div>
-      </main>
+      <div className="app-body">
+        <main className="app-main app-main--map">
+          <CityMap />
+          <div className="map-overlay">
+            <p className="map-overlay__eyebrow">Камеры фотовидеофиксации</p>
+            <p className="map-overlay__count">
+              {isReady ? cameraCount : '…'}
+              <span className="map-overlay__unit"> на карте</span>
+            </p>
+            <p className="map-overlay__hint">
+              Клик по кластеру — приблизить, по камере — детали
+            </p>
+          </div>
+          <PlaybackControls />
+        </main>
+        <ViolationFeed />
+      </div>
 
       <footer className="app-footer">
         <span>RoadGuard · портфолио-проект · {CITY.name}</span>

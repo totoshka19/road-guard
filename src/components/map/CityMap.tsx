@@ -8,28 +8,38 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { selectCamera } from '../../features/cameras/camerasSlice'
 import { camerasToGeoJson } from '../../features/cameras/cameraGeoJson'
+import { recentViolationsToGeoJson } from '../../features/violations/violationGeoJson'
 import { CITY } from '../../data/city'
 import {
   clusterCountLayer,
   clusterLayer,
   selectedLayer,
   unclusteredLayer,
+  violationLayer,
 } from './layers'
+import { ViolationPulses } from './ViolationPulses'
 
 // Тёмный векторный стиль без API-ключа (OpenFreeMap, схема OpenMapTiles).
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/dark'
 const CAMERAS_SOURCE_ID = 'cameras'
 // Клики ловим только на кластерах и одиночных камерах, не на подложке.
 const INTERACTIVE_LAYERS = ['clusters', 'unclustered-point']
+// Сколько последних нарушений держим точками на карте (свежие сверху буфера).
+const MAX_MAP_VIOLATIONS = 150
 
 export function CityMap() {
   const dispatch = useAppDispatch()
   const cameras = useAppSelector((s) => s.cameras.items)
+  const violations = useAppSelector((s) => s.violations.items)
   const selectedId = useAppSelector((s) => s.cameras.selectedId)
   const mapRef = useRef<MapRef>(null)
   const [cursor, setCursor] = useState('grab')
 
   const data = useMemo(() => camerasToGeoJson(cameras), [cameras])
+  const violationData = useMemo(
+    () => recentViolationsToGeoJson(violations, MAX_MAP_VIOLATIONS),
+    [violations],
+  )
   const selectedCamera = useMemo(
     () => cameras.find((camera) => camera.id === selectedId) ?? null,
     [cameras, selectedId],
@@ -107,6 +117,12 @@ export function CityMap() {
         <Layer {...unclusteredLayer} />
         <Layer {...selectedLayerStyle} />
       </Source>
+
+      {/* Нарушения из потока — точками поверх камер + GSAP-пульс на новые. */}
+      <Source id="violations" type="geojson" data={violationData}>
+        <Layer {...violationLayer} />
+      </Source>
+      <ViolationPulses />
 
       {selectedCamera && (
         <Popup

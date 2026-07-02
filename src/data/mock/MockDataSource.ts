@@ -1,4 +1,4 @@
-import type { DataSource } from '../DataSource'
+import type { DataSource, StreamOptions } from '../DataSource'
 import type { Camera, Violation, ViolationFilters } from '../types'
 import { createViolation, generateCameras } from './violationGenerator'
 
@@ -52,7 +52,11 @@ export class MockDataSource implements DataSource {
     )
   }
 
-  subscribe(onViolation: (violation: Violation) => void): () => void {
+  subscribe(
+    onViolation: (violation: Violation) => void,
+    options: StreamOptions = {},
+  ): () => void {
+    const speed = options.speed && options.speed > 0 ? options.speed : 1
     let stopped = false
     let timer: ReturnType<typeof setTimeout>
 
@@ -62,11 +66,13 @@ export class MockDataSource implements DataSource {
       for (let i = 0; i < burst; i += 1) {
         onViolation(createViolation(this.cameras))
       }
-      const delay = BASE_INTERVAL_MS * (1 + (Math.random() * 2 - 1) * JITTER)
+      // Быстрее поток — короче интервал между событиями.
+      const delay =
+        (BASE_INTERVAL_MS * (1 + (Math.random() * 2 - 1) * JITTER)) / speed
       timer = setTimeout(tick, delay)
     }
 
-    timer = setTimeout(tick, BASE_INTERVAL_MS)
+    timer = setTimeout(tick, BASE_INTERVAL_MS / speed)
 
     return () => {
       stopped = true
