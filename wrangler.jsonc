@@ -1,0 +1,11 @@
+{
+  // Конфигурация деплоя на Cloudflare Workers (Static Assets).
+  // Worker без кода — раздаёт готовую статику из dist/.
+  "name": "road-guard",
+  "compatibility_date": "2024-11-01",
+  "assets": {
+    "directory": "./dist",
+    // Отдаём index.html на любой неизвестный путь (нужно для SPA-роутинга).
+    "not_found_handling": "single-page-application"
+  }
+}
