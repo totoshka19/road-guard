@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { useGetCamerasQuery, useGetViolationsQuery } from '../app/api'
 import { CITY } from '../data/city'
 import { useViolationStream } from '../features/playback/useViolationStream'
+import { PwaUpdatePrompt } from './PwaUpdatePrompt'
 import { ThemeToggle } from '../features/ui/ThemeToggle'
 import { useThemeSync } from '../features/ui/useThemeSync'
 import { tick } from '../features/ui/uiSlice'
@@ -65,6 +66,8 @@ export function RootLayout() {
       <footer className="app-footer">
         <span>RoadGuard · портфолио-проект · {CITY.name}</span>
       </footer>
+
+      <PwaUpdatePrompt />
     </div>
   )
 }
