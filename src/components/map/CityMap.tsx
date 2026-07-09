@@ -12,6 +12,8 @@ import {
   selectAllCameras,
   selectSelectedCamera,
 } from '../../features/cameras/selectors'
+import { selectResolvedTheme } from '../../features/ui/selectors'
+import type { ResolvedTheme } from '../../lib/theme'
 import { camerasToGeoJson } from '../../features/cameras/cameraGeoJson'
 import { recentViolationsToGeoJson } from '../../features/violations/violationGeoJson'
 import { selectFilteredViolations } from '../../features/stats/selectors'
@@ -26,8 +28,17 @@ import {
 } from './layers'
 import { ViolationPulses } from './ViolationPulses'
 
-// Тёмный векторный стиль без API-ключа (OpenFreeMap, схема OpenMapTiles).
-const MAP_STYLE = 'https://tiles.openfreemap.org/styles/dark'
+/**
+ * Векторные стили без API-ключа (OpenFreeMap, схема OpenMapTiles).
+ *
+ * Смена `mapStyle` безопасна для наших слоёв: `<Source>` и `<Layer>` из
+ * react-map-gl подписаны на событие `styledata` и переустанавливают себя
+ * после перезагрузки стиля — кластеры и heatmap не теряются.
+ */
+const MAP_STYLES: Record<ResolvedTheme, string> = {
+  dark: 'https://tiles.openfreemap.org/styles/dark',
+  light: 'https://tiles.openfreemap.org/styles/positron',
+}
 const CAMERAS_SOURCE_ID = 'cameras'
 // Клики ловим только на кластерах и одиночных камерах, не на подложке.
 const INTERACTIVE_LAYERS = ['clusters', 'unclustered-point']
@@ -41,6 +52,7 @@ export function CityMap() {
   const heatmap = useAppSelector((s) => s.ui.heatmap)
   const selectedId = useAppSelector((s) => s.cameras.selectedId)
   const selectedCamera = useAppSelector(selectSelectedCamera)
+  const theme = useAppSelector(selectResolvedTheme)
   const mapRef = useRef<MapRef>(null)
   const [cursor, setCursor] = useState('grab')
 
@@ -82,6 +94,23 @@ export function CityMap() {
     [dispatch],
   )
 
+  /**
+   * Сворачиваем атрибуцию сразу после загрузки.
+   *
+   * У MapLibre `attributionControl` по умолчанию `{ compact: true }`, и при
+   * переходе в компактный режим он добавляет разом `maplibregl-compact` и
+   * `maplibregl-compact-show`, то есть показывает плашку развёрнутой. Сама она
+   * сворачивается лишь после первого перетаскивания карты. Опции «свернуть
+   * изначально» нет, поэтому снимаем класс руками — клик по «i» по-прежнему
+   * разворачивает её, так что указание источника остаётся доступным.
+   */
+  const onLoad = useCallback(() => {
+    mapRef.current
+      ?.getContainer()
+      .querySelector('.maplibregl-ctrl-attrib')
+      ?.classList.remove('maplibregl-compact-show')
+  }, [])
+
   // Курсор-«рука» над кликабельными фичами. Обновляем только при смене,
   // чтобы onMouseMove не дёргал ре-рендер на каждый пиксель.
   const onMouseMove = useCallback((event: MapLayerMouseEvent) => {
@@ -102,10 +131,11 @@ export function CityMap() {
       }}
       minZoom={9}
       maxZoom={17}
-      mapStyle={MAP_STYLE}
+      mapStyle={MAP_STYLES[theme]}
       style={{ width: '100%', height: '100%' }}
       interactiveLayerIds={INTERACTIVE_LAYERS}
       cursor={cursor}
+      onLoad={onLoad}
       onClick={onClick}
       onMouseMove={onMouseMove}
     >

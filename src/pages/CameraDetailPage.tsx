@@ -7,6 +7,7 @@ import { useAppSelector } from '../app/hooks'
 import { useGetCameraViolationsQuery, useGetCamerasQuery } from '../app/api'
 import { VIOLATION_TYPES } from '../data/city'
 import type { Violation } from '../data/types'
+import { useChartPalette } from '../features/ui/useChartPalette'
 import { CHART_ACCENT, CHART_ACCENT_FILL } from '../lib/chartSetup'
 import { formatRelativeTime } from '../lib/formatRelativeTime'
 import { countByType, violationsOverTime, withinLastMs } from '../lib/stats'
@@ -20,6 +21,7 @@ const POLL_INTERVAL_MS = 5000
 const RECENT_LIMIT = 20
 
 function TypeDoughnut({ violations }: { violations: Violation[] }) {
+  const palette = useChartPalette()
   const byType = useMemo(
     () => countByType(violations).filter((t) => t.count > 0),
     [violations],
@@ -40,7 +42,13 @@ function TypeDoughnut({ violations }: { violations: Violation[] }) {
     plugins: {
       legend: {
         position: 'bottom',
-        labels: { boxWidth: 9, boxHeight: 9, font: { size: 10 }, padding: 8 },
+        labels: {
+          color: palette.tick,
+          boxWidth: 9,
+          boxHeight: 9,
+          font: { size: 10 },
+          padding: 8,
+        },
       },
     },
   }
@@ -54,6 +62,7 @@ function TimelineChart({
   violations: Violation[]
   now: number
 }) {
+  const palette = useChartPalette()
   const series = useMemo(
     () => violationsOverTime(violations, now, SPAN_MS, BUCKETS),
     [violations, now],
@@ -81,8 +90,15 @@ function TimelineChart({
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      y: { beginAtZero: true, ticks: { precision: 0 } },
-      x: { ticks: { maxTicksLimit: 6, font: { size: 9 } } },
+      y: {
+        beginAtZero: true,
+        ticks: { precision: 0, color: palette.tick },
+        grid: { color: palette.grid },
+      },
+      x: {
+        ticks: { maxTicksLimit: 6, font: { size: 9 }, color: palette.tick },
+        grid: { color: palette.grid },
+      },
     },
   }
   return <Line data={data} options={options} />

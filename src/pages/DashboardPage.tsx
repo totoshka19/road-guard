@@ -1,5 +1,5 @@
+import { Suspense, lazy } from 'react'
 import { useAppSelector } from '../app/hooks'
-import { CityMap } from '../components/map/CityMap'
 import { Sidebar } from '../components/Sidebar'
 import { PlaybackControls } from '../features/playback/PlaybackControls'
 import { HeatmapToggle } from '../features/ui/HeatmapToggle'
@@ -8,6 +8,24 @@ import {
   selectCamerasReady,
 } from '../features/cameras/selectors'
 
+/**
+ * Карта — единственная дверь к maplibre-gl, react-map-gl и gsap (~1 МБ).
+ * За ленивой границей их не тянут ни страница камеры, ни 404, а на самом
+ * дашборде каркас и статистика рисуются, не дожидаясь парсинга этого чанка.
+ */
+const CityMap = lazy(() =>
+  import('../components/map/CityMap').then((m) => ({ default: m.CityMap })),
+)
+
+function MapSkeleton() {
+  return (
+    <div className="map-skeleton" role="status">
+      <span className="map-skeleton__pulse" aria-hidden />
+      <span className="map-skeleton__text">Загрузка карты…</span>
+    </div>
+  )
+}
+
 export function DashboardPage() {
   const cameraCount = useAppSelector(selectAllCameras).length
   const isReady = useAppSelector(selectCamerasReady)
@@ -15,7 +33,9 @@ export function DashboardPage() {
   return (
     <div className="app-body">
       <main className="app-main app-main--map">
-        <CityMap />
+        <Suspense fallback={<MapSkeleton />}>
+          <CityMap />
+        </Suspense>
         <div className="map-overlay">
           <p className="map-overlay__eyebrow">Камеры фотовидеофиксации</p>
           <p className="map-overlay__count">

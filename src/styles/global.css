@@ -109,6 +109,36 @@ body {
   box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
 }
 
+/* Правая группа в шапке: переключатель темы + статус потока. */
+.app-header__aside {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* Тело дашборда: карта + боковая лента событий. */
 .app-body {
   flex: 1;
@@ -125,6 +155,55 @@ body {
 /* Карта во весь экран: относительный контейнер для оверлеев поверх канвы. */
 .app-main--map {
   position: relative;
+}
+
+/* Заглушка на время подгрузки чанка карты. */
+.map-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(56, 189, 248, 0.08),
+      transparent 60%
+    ),
+    var(--bg-elevated);
+}
+
+.map-skeleton__pulse {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  animation: map-skeleton-pulse 1.4s ease-out infinite;
+}
+
+.map-skeleton__text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+@keyframes map-skeleton-pulse {
+  from {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-skeleton__pulse {
+    animation: none;
+    opacity: 0.5;
+  }
 }
 
 /* Плавающая панель со сводкой поверх карты. */
@@ -589,14 +668,28 @@ body {
   white-space: nowrap;
 }
 
-/* Тёмная тема для контролов и попапа MapLibre. */
-.maplibregl-ctrl-attribution {
-  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+/*
+ * Контролы и попап MapLibre под тему приложения.
+ *
+ * Два подвоха. Класс — `maplibregl-ctrl-attrib`, а не `…-attribution`:
+ * правило на второй молча ничего не делало. И maplibre-gl.css грузится позже
+ * global.css (он импортирован внутри ленивого чанка карты), причём использует
+ * ровно те же классы — при равной специфичности выигрывает он. Поэтому здесь
+ * третий класс, и отдельно перекрыт compact-вариант с непрозрачным фоном.
+ */
+.maplibregl-map .maplibregl-ctrl.maplibregl-ctrl-attrib,
+.maplibregl-map .maplibregl-ctrl-attrib.maplibregl-compact {
+  background-color: color-mix(in srgb, var(--bg-elevated) 85%, transparent);
   color: var(--text-muted);
 }
 
-.maplibregl-ctrl-attribution a {
+.maplibregl-map .maplibregl-ctrl-attrib a {
   color: var(--text-muted);
+}
+
+/* Иконка «i» у свёрнутой атрибуции — тёмный SVG, на тёмной подложке не видна. */
+:root[data-theme='dark'] .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
 }
 
 .camera-popup .maplibregl-popup-content {
@@ -718,6 +811,157 @@ body {
   color: var(--accent);
 }
 
+/* Скелетоны: та же геометрия, что у настоящих блоков — контент не прыгает. */
+.skeleton {
+  display: block;
+  border-radius: 0.4rem;
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    color-mix(in srgb, var(--border) 55%, var(--text-muted)) 37%,
+    var(--border) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 100% 50%;
+  }
+  to {
+    background-position: 0 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+.skeleton--value {
+  width: 55%;
+  height: 1.35rem;
+}
+
+.skeleton--label {
+  width: 85%;
+  height: 0.55rem;
+}
+
+.skeleton--chart {
+  width: 100%;
+  height: 100%;
+}
+
+.skeleton--dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton--line {
+  height: 0.6rem;
+  margin: 0.3rem 0;
+}
+
+.skeleton--line-short {
+  width: 55%;
+}
+
+/* Ошибка начальной загрузки. */
+.panel-error {
+  padding: 2.5rem 1.25rem;
+  text-align: center;
+}
+
+.panel-error__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.panel-error__detail {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.panel-error__retry {
+  margin-top: 1.1rem;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #06121c;
+  background: var(--accent);
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+}
+
+.panel-error__retry:hover {
+  background: var(--accent-strong);
+}
+
+/* Плашка обновления / готовности к офлайну (service worker). */
+.pwa-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.8);
+}
+
+.pwa-toast__text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.pwa-toast__actions {
+  display: inline-flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.pwa-toast__btn {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.pwa-toast__btn:hover {
+  color: var(--text);
+}
+
+.pwa-toast__btn--primary {
+  color: #06121c;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.pwa-toast__btn--primary:hover {
+  color: #06121c;
+  background: var(--accent-strong);
+}
+
 /* Подвал */
 .app-footer {
   padding: 1rem 1.5rem;
@@ -727,14 +971,100 @@ body {
   text-align: center;
 }
 
-/* Светлая тема */
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f8fafc;
-    --bg-elevated: #ffffff;
-    --border: #e2e8f0;
-    --text: #0f172a;
-    --text-muted: #64748b;
-    color-scheme: light;
+/*
+ * Светлая тема. Атрибут data-theme ставит инлайн-скрипт в index.html до
+ * первой отрисовки, дальше его синхронизирует useThemeSync — поэтому
+ * системная настройка учитывается без @media и без вспышки чужой темы.
+ * Если скрипт не отработал (JS отключён), остаётся тёмная из :root.
+ */
+:root[data-theme='light'] {
+  --bg: #f8fafc;
+  --bg-elevated: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+
+  color-scheme: light;
+}
+
+/*
+ * Мобильная раскладка.
+ *
+ * На десктопе оболочка фиксирована в 100dvh, а прокручиваются отдельные
+ * панели внутри неё. На узком экране такая модель вредна: вложенные скроллы
+ * мешают жестам, а адресная строка браузера прячется только при прокрутке
+ * корневого документа. Поэтому здесь карта получает фиксированную высоту,
+ * панель встаёт под неё, и скроллится вся связка целиком — а внутренние
+ * overflow-y гасим, иначе получим скролл внутри скролла.
+ */
+@media (max-width: 768px) {
+  .app-body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .app-main--map {
+    flex: none;
+    height: 45vh;
+    min-height: 16rem;
+  }
+
+  /*
+   * flex: none обязателен. Иначе колоночный флекс сожмёт панель ниже её
+   * содержательной высоты, и контент полезет наружу вместо того, чтобы
+   * задать высоту прокрутке .app-body.
+   */
+  .sidebar {
+    width: 100%;
+    flex: none;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .sidebar__panel--scroll,
+  .feed,
+  .feed__list {
+    flex: none;
+    overflow-y: visible;
+  }
+
+  /* Оверлеи карты: на 375px панель со сводкой и кнопка heatmap не разъезжались. */
+  .map-overlay {
+    max-width: 9.5rem;
+    padding: 0.6rem 0.7rem;
+  }
+
+  .map-overlay__hint {
+    display: none;
+  }
+
+  /* «ФОТОВИДЕОФИКСАЦИИ» — одно длинное слово: разрядка выталкивала его за рамку. */
+  .map-overlay__eyebrow {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+  }
+
+  .app-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .page {
+    padding: 1rem;
+  }
+}
+
+/* Совсем узкие экраны: шапке нужно место под бренд. */
+@media (max-width: 480px) {
+  .brand__subtitle {
+    display: none;
+  }
+
+  /* Состояние потока дублирует кнопка плейбека — пилюлю можно убрать. */
+  .status-pill {
+    display: none;
+  }
+
+  .kpis {
+    grid-template-columns: 1fr 1fr;
   }
 }

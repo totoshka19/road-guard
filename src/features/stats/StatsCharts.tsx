@@ -2,6 +2,7 @@ import { Bar, Doughnut, Line } from 'react-chartjs-2'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { useAppSelector } from '../../app/hooks'
 import { CHART_ACCENT, CHART_ACCENT_FILL } from '../../lib/chartSetup'
+import { useChartPalette } from '../ui/useChartPalette'
 import {
   selectCountByDistrict,
   selectCountByType,
@@ -10,6 +11,7 @@ import {
 
 function TypeDoughnut() {
   const byType = useAppSelector(selectCountByType)
+  const palette = useChartPalette()
   const data: ChartData<'doughnut'> = {
     labels: byType.map((t) => t.label),
     datasets: [
@@ -26,7 +28,13 @@ function TypeDoughnut() {
     plugins: {
       legend: {
         position: 'bottom',
-        labels: { boxWidth: 9, boxHeight: 9, font: { size: 10 }, padding: 8 },
+        labels: {
+          color: palette.tick,
+          boxWidth: 9,
+          boxHeight: 9,
+          font: { size: 10 },
+          padding: 8,
+        },
       },
     },
   }
@@ -35,6 +43,7 @@ function TypeDoughnut() {
 
 function DistrictBar() {
   const byDistrict = useAppSelector(selectCountByDistrict)
+  const palette = useChartPalette()
   const data: ChartData<'bar'> = {
     labels: byDistrict.map((d) => d.district),
     datasets: [
@@ -51,8 +60,15 @@ function DistrictBar() {
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      x: { beginAtZero: true, ticks: { precision: 0 } },
-      y: { ticks: { font: { size: 10 } } },
+      x: {
+        beginAtZero: true,
+        ticks: { precision: 0, color: palette.tick },
+        grid: { color: palette.grid },
+      },
+      y: {
+        ticks: { font: { size: 10 }, color: palette.tick },
+        grid: { color: palette.grid },
+      },
     },
   }
   return <Bar data={data} options={options} />
@@ -60,6 +76,7 @@ function DistrictBar() {
 
 function TimelineChart() {
   const series = useAppSelector(selectTimeSeries)
+  const palette = useChartPalette()
   const data: ChartData<'line'> = {
     labels: series.map((b) =>
       new Date(b.from).toLocaleTimeString('ru-RU', {
@@ -83,8 +100,15 @@ function TimelineChart() {
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      y: { beginAtZero: true, ticks: { precision: 0 } },
-      x: { ticks: { maxTicksLimit: 6, font: { size: 9 } } },
+      y: {
+        beginAtZero: true,
+        ticks: { precision: 0, color: palette.tick },
+        grid: { color: palette.grid },
+      },
+      x: {
+        ticks: { maxTicksLimit: 6, font: { size: 9 }, color: palette.tick },
+        grid: { color: palette.grid },
+      },
     },
   }
   return <Line data={data} options={options} />
