@@ -39,6 +39,20 @@ export function countByDistrict(violations: Violation[]): DistrictCount[] {
   }))
 }
 
+/**
+ * События за последние `spanMs`. Верхняя граница намеренно не проверяется:
+ * `now` тикает раз в несколько секунд, и только что прилетевшее из потока
+ * событие может оказаться «из будущего» относительно него.
+ */
+export function withinLastMs(
+  violations: Violation[],
+  now: number,
+  spanMs: number,
+): Violation[] {
+  const start = now - spanMs
+  return violations.filter((v) => v.timestamp >= start)
+}
+
 /** Одна корзина временного ряда. */
 export interface TimeBucket {
   from: number

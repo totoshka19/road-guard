@@ -9,7 +9,7 @@ import { VIOLATION_TYPES } from '../data/city'
 import type { Violation } from '../data/types'
 import { CHART_ACCENT, CHART_ACCENT_FILL } from '../lib/chartSetup'
 import { formatRelativeTime } from '../lib/formatRelativeTime'
-import { countByType, violationsOverTime } from '../lib/stats'
+import { countByType, violationsOverTime, withinLastMs } from '../lib/stats'
 
 /** Динамика камеры: последние 6 часов, 12 корзин по 30 минут. */
 const SPAN_MS = 6 * 60 * 60 * 1000
@@ -113,19 +113,27 @@ export function CameraDetailPage() {
     pollingInterval: POLL_INTERVAL_MS,
   })
 
+  // Эндпоинт отдаёт всю историю камеры; страница показывает окно в SPAN_MS —
+  // то же самое, по которому строится график. Иначе KPI считал бы события,
+  // выпавшие из графика, и подпись «за 6 часов» врала бы.
+  const windowed = useMemo(
+    () => withinLastMs(violations, now, SPAN_MS),
+    [violations, now],
+  )
+
   const recent = useMemo(
     () =>
-      [...violations]
+      [...windowed]
         .sort((a, b) => b.timestamp - a.timestamp)
         .slice(0, RECENT_LIMIT),
-    [violations],
+    [windowed],
   )
   const topType = useMemo(() => {
-    const byType = countByType(violations)
-    return violations.length
+    const byType = countByType(windowed)
+    return windowed.length
       ? byType.reduce((max, cur) => (cur.count > max.count ? cur : max))
       : null
-  }, [violations])
+  }, [windowed])
 
   if (!camerasLoading && !camera) {
     return (
@@ -163,7 +171,7 @@ export function CameraDetailPage() {
         <>
           <div className="kpis">
             <div className="kpi">
-              <span className="kpi__value">{violations.length}</span>
+              <span className="kpi__value">{windowed.length}</span>
               <span className="kpi__label">событий за 6 часов</span>
             </div>
             <div className="kpi">
@@ -195,13 +203,13 @@ export function CameraDetailPage() {
             <section className="chart-card">
               <h3 className="chart-card__title">По типам</h3>
               <div className="chart-card__canvas">
-                <TypeDoughnut violations={violations} />
+                <TypeDoughnut violations={windowed} />
               </div>
             </section>
             <section className="chart-card">
               <h3 className="chart-card__title">Динамика · 6 ч</h3>
               <div className="chart-card__canvas">
-                <TimelineChart violations={violations} now={now} />
+                <TimelineChart violations={windowed} now={now} />
               </div>
             </section>
           </div>
@@ -209,7 +217,9 @@ export function CameraDetailPage() {
           <section className="page__section">
             <h3 className="chart-card__title">Последние нарушения</h3>
             {recent.length === 0 ? (
-              <p className="page__empty">С этой камеры пока ничего не пришло</p>
+              <p className="page__empty">
+                За последние 6 часов с этой камеры ничего не пришло
+              </p>
             ) : (
               <ul className="feed__list">
                 {recent.map((violation) => {
