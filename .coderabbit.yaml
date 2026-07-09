@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Конфигурация AI-ревьюера CodeRabbit.
+# Документация: https://docs.coderabbit.ai/getting-started/yaml-configuration
+
+reviews:
+  pre_merge_checks:
+    docstrings:
+      # Проверка отключена осознанно, а не «чтобы не мешала».
+      #
+      # Метрика считает наличие блоков /** */ у каждого символа, а не наличие
+      # объяснений. В проекте комментарий стоит там, где есть неочевидное
+      # решение, и часто относится к группе символов сразу. Docstring на
+      # `NotFoundPage`, `selectAllCameras` или `TypeDoughnut` лишь повторил бы
+      # их имена — это шум, который устаревает первым.
+      #
+      # Кавычки не для красоты: в YAML 1.1 голый `off` — булев false, и парсер
+      # такой версии подсунул бы схеме не ту строку. В 1.2 это уже строка.
+      mode: 'off'
