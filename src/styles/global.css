@@ -127,6 +127,55 @@ body {
   position: relative;
 }
 
+/* Заглушка на время подгрузки чанка карты. */
+.map-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(56, 189, 248, 0.08),
+      transparent 60%
+    ),
+    var(--bg-elevated);
+}
+
+.map-skeleton__pulse {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  animation: map-skeleton-pulse 1.4s ease-out infinite;
+}
+
+.map-skeleton__text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+@keyframes map-skeleton-pulse {
+  from {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-skeleton__pulse {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
 /* Плавающая панель со сводкой поверх карты. */
 .map-overlay {
   position: absolute;
