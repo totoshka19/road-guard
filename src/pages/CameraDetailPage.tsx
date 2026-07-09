@@ -7,12 +7,8 @@ import { useAppSelector } from '../app/hooks'
 import { useGetCameraViolationsQuery, useGetCamerasQuery } from '../app/api'
 import { VIOLATION_TYPES } from '../data/city'
 import type { Violation } from '../data/types'
-import { selectResolvedTheme } from '../features/ui/selectors'
-import {
-  CHART_ACCENT,
-  CHART_ACCENT_FILL,
-  chartPalette,
-} from '../lib/chartSetup'
+import { useChartPalette } from '../features/ui/useChartPalette'
+import { CHART_ACCENT, CHART_ACCENT_FILL } from '../lib/chartSetup'
 import { formatRelativeTime } from '../lib/formatRelativeTime'
 import { countByType, violationsOverTime, withinLastMs } from '../lib/stats'
 
@@ -25,7 +21,7 @@ const POLL_INTERVAL_MS = 5000
 const RECENT_LIMIT = 20
 
 function TypeDoughnut({ violations }: { violations: Violation[] }) {
-  const palette = chartPalette(useAppSelector(selectResolvedTheme))
+  const palette = useChartPalette()
   const byType = useMemo(
     () => countByType(violations).filter((t) => t.count > 0),
     [violations],
@@ -66,7 +62,7 @@ function TimelineChart({
   violations: Violation[]
   now: number
 }) {
-  const palette = chartPalette(useAppSelector(selectResolvedTheme))
+  const palette = useChartPalette()
   const series = useMemo(
     () => violationsOverTime(violations, now, SPAN_MS, BUCKETS),
     [violations, now],

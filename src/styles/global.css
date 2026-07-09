@@ -983,6 +983,7 @@ body {
   --border: #e2e8f0;
   --text: #0f172a;
   --text-muted: #64748b;
+
   color-scheme: light;
 }
 
@@ -1000,7 +1001,6 @@ body {
   .app-body {
     flex-direction: column;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   .app-main--map {
