@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link, Outlet } from 'react-router'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
-import { useGetCamerasQuery, useGetViolationsQuery } from '../app/api'
+import { useInitialData } from '../app/useInitialData'
 import { CITY } from '../data/city'
 import { useViolationStream } from '../features/playback/useViolationStream'
 import { PwaUpdatePrompt } from './PwaUpdatePrompt'
@@ -23,8 +23,9 @@ const CLOCK_INTERVAL_MS = 5000
 export function RootLayout() {
   const dispatch = useAppDispatch()
 
-  useGetCamerasQuery()
-  useGetViolationsQuery()
+  // Подписку держит layout, а не страница: пока он смонтирован, RTK Query
+  // не выгружает записи кэша, а поток не рвётся при переходе по маршрутам.
+  useInitialData()
   useViolationStream()
   useThemeSync()
 

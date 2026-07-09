@@ -1,16 +1,39 @@
 import { useState } from 'react'
 import { useAppSelector } from '../app/hooks'
+import { useInitialData } from '../app/useInitialData'
 import { FilterControls } from '../features/filters/FilterControls'
 import { KpiCards } from '../features/stats/KpiCards'
 import { StatsCharts } from '../features/stats/StatsCharts'
 import { ViolationFeed } from '../features/violations/ViolationFeed'
 import { selectFilteredViolations } from '../features/stats/selectors'
+import { FeedSkeleton, PanelError, StatsSkeleton } from './PanelStates'
 
 type Tab = 'stats' | 'feed'
 
 export function Sidebar() {
   const [tab, setTab] = useState<Tab>('stats')
+  const { isLoading, isError, errorMessage, retry } = useInitialData()
   const count = useAppSelector((s) => selectFilteredViolations(s).length)
+
+  // Ошибка и загрузка общие для обеих вкладок: без начальных данных
+  // ни статистика, ни лента показать нечего.
+  const content = isError ? (
+    <PanelError message={errorMessage} onRetry={retry} />
+  ) : isLoading ? (
+    tab === 'stats' ? (
+      <StatsSkeleton />
+    ) : (
+      <FeedSkeleton />
+    )
+  ) : tab === 'stats' ? (
+    <div className="sidebar__panel sidebar__panel--scroll">
+      <FilterControls />
+      <KpiCards />
+      <StatsCharts />
+    </div>
+  ) : (
+    <ViolationFeed />
+  )
 
   return (
     <aside className="sidebar">
@@ -39,19 +62,17 @@ export function Sidebar() {
           }
           onClick={() => setTab('feed')}
         >
-          Лента <span className="sidebar__badge">{count}</span>
+          Лента{' '}
+          {/* Счётчик считает буфер, который живой поток наполняет и при
+              упавшем REST-запросе. Показывать число рядом с «не удалось
+              загрузить» — противоречить самим себе. */}
+          <span className="sidebar__badge">
+            {isError ? '—' : isLoading ? '…' : count}
+          </span>
         </button>
       </div>
 
-      {tab === 'stats' ? (
-        <div className="sidebar__panel sidebar__panel--scroll">
-          <FilterControls />
-          <KpiCards />
-          <StatsCharts />
-        </div>
-      ) : (
-        <ViolationFeed />
-      )}
+      {content}
     </aside>
   )
 }
