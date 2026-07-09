@@ -1,13 +1,12 @@
 import { Bar, Doughnut, Line } from 'react-chartjs-2'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { useAppSelector } from '../../app/hooks'
+import { CHART_ACCENT, CHART_ACCENT_FILL } from '../../lib/chartSetup'
 import {
   selectCountByDistrict,
   selectCountByType,
   selectTimeSeries,
 } from './selectors'
-
-const ACCENT = '#38bdf8'
 
 function TypeDoughnut() {
   const byType = useAppSelector(selectCountByType)
@@ -41,7 +40,7 @@ function DistrictBar() {
     datasets: [
       {
         data: byDistrict.map((d) => d.count),
-        backgroundColor: ACCENT,
+        backgroundColor: CHART_ACCENT,
         borderRadius: 4,
         barThickness: 12,
       },
@@ -71,8 +70,8 @@ function TimelineChart() {
     datasets: [
       {
         data: series.map((b) => b.count),
-        borderColor: ACCENT,
-        backgroundColor: 'rgba(56, 189, 248, 0.15)',
+        borderColor: CHART_ACCENT,
+        backgroundColor: CHART_ACCENT_FILL,
         fill: true,
         tension: 0.35,
         pointRadius: 0,

@@ -42,12 +42,19 @@ function nextId(prefix: string): string {
   return `${prefix}_${seq.toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`
 }
 
-/** Камеры, равномерно распределённые по районам города. */
+/**
+ * Камеры, равномерно распределённые по районам города.
+ *
+ * id детерминированный (`cam_1`, `cam_2`, …), а не случайный: камера —
+ * запись каталога, на которую ссылается URL страницы. Случайный id ломал бы
+ * ссылку /camera/:id при каждой перезагрузке. У нарушений id, наоборот,
+ * случайный — это эфемерные события.
+ */
 export function generateCameras(count: number): Camera[] {
   return Array.from({ length: count }, (_, i) => {
     const district = DISTRICTS[i % DISTRICTS.length]
     return {
-      id: nextId('cam'),
+      id: `cam_${i + 1}`,
       name: `Камера №${i + 1}`,
       lat:
         district.center.lat + randomInRange(-district.spread, district.spread),

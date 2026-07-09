@@ -3,8 +3,10 @@ import type { Camera, Violation, ViolationFilters } from '../types'
 import { createViolation, generateCameras } from './violationGenerator'
 
 const CAMERA_COUNT = 60
-const SEED_HISTORY = 120
-const SEED_WINDOW_MS = 2 * 60 * 60 * 1000 // события за последние 2 часа
+const SEED_HISTORY = 1800
+const SEED_WINDOW_MS = 6 * 60 * 60 * 1000 // события за последние 6 часов
+/** Потолок «серверной» истории: за долгую сессию она не должна расти вечно. */
+const HISTORY_CAP = 5000
 
 // Параметры «живости» потока.
 const BASE_INTERVAL_MS = 1500
@@ -14,6 +16,7 @@ const BURST_SIZE = 4
 
 function matchesFilters(v: Violation, f: ViolationFilters): boolean {
   return (
+    (f.cameraId === undefined || v.cameraId === f.cameraId) &&
     (!f.types || f.types.includes(v.type)) &&
     (!f.districts || f.districts.includes(v.district)) &&
     (f.since === undefined || v.timestamp >= f.since) &&
@@ -52,6 +55,17 @@ export class MockDataSource implements DataSource {
     )
   }
 
+  /**
+   * «Сервер» сохраняет отданное в поток событие: иначе REST-запрос истории
+   * (например, по одной камере) не увидел бы того, что уже показала лента.
+   */
+  private record(violation: Violation): void {
+    this.history.push(violation)
+    if (this.history.length > HISTORY_CAP) {
+      this.history.splice(0, this.history.length - HISTORY_CAP)
+    }
+  }
+
   subscribe(
     onViolation: (violation: Violation) => void,
     options: StreamOptions = {},
@@ -64,7 +78,9 @@ export class MockDataSource implements DataSource {
       if (stopped) return
       const burst = Math.random() < BURST_CHANCE ? BURST_SIZE : 1
       for (let i = 0; i < burst; i += 1) {
-        onViolation(createViolation(this.cameras))
+        const violation = createViolation(this.cameras)
+        this.record(violation)
+        onViolation(violation)
       }
       // Быстрее поток — короче интервал между событиями.
       const delay =

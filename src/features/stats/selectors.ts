@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit'
 import type { RootState } from '../../app/store'
+import { selectAllCameras } from '../cameras/selectors'
 import { matchesActiveFilters } from '../../lib/filters'
 import {
   countByDistrict,
@@ -14,7 +15,6 @@ export const TIMELINE_BUCKETS = 15
 
 const selectItems = (s: RootState) => s.violations.items
 const selectFilters = (s: RootState) => s.filters
-const selectCameras = (s: RootState) => s.cameras.items
 const selectNow = (s: RootState) => s.ui.now
 
 /**
@@ -52,7 +52,7 @@ export interface DashboardKpis {
 }
 
 export const selectKpis = createSelector(
-  [selectFilteredViolations, selectCountByType, selectCameras],
+  [selectFilteredViolations, selectCountByType, selectAllCameras],
   (filtered, byType, cameras): DashboardKpis => ({
     total: filtered.length,
     activeCameras: new Set(filtered.map((v) => v.cameraId)).size,

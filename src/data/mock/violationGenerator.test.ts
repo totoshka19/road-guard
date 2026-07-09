@@ -15,6 +15,18 @@ describe('violationGenerator', () => {
     }
   })
 
+  it('id камер детерминированы — ссылка /camera/:id переживает перезагрузку', () => {
+    expect(generateCameras(3).map((c) => c.id)).toEqual([
+      'cam_1',
+      'cam_2',
+      'cam_3',
+    ])
+    // Повторная генерация (новая загрузка страницы) даёт те же id.
+    expect(generateCameras(3).map((c) => c.id)).toEqual(
+      generateCameras(3).map((c) => c.id),
+    )
+  })
+
   it('создаёт нарушение с существующей камеры, проходящее Zod-схему', () => {
     const cameras = generateCameras(5)
     const violation = createViolation(cameras)

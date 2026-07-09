@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { countByDistrict, countByType, violationsOverTime } from './stats'
+import {
+  countByDistrict,
+  countByType,
+  violationsOverTime,
+  withinLastMs,
+} from './stats'
 import { DISTRICTS, VIOLATION_TYPES } from '../data/city'
 import type { Violation, ViolationType } from '../data/types'
 
@@ -47,6 +52,46 @@ describe('countByDistrict', () => {
     ])
     expect(result).toHaveLength(DISTRICTS.length)
     expect(result.find((r) => r.district === 'Кировский')?.count).toBe(2)
+  })
+})
+
+describe('withinLastMs', () => {
+  it('отбрасывает события старше окна', () => {
+    const now = 100_000
+    const result = withinLastMs(
+      [
+        makeViolation({ id: 'внутри', timestamp: now - 9_000 }),
+        makeViolation({ id: 'на границе', timestamp: now - 10_000 }),
+        makeViolation({ id: 'снаружи', timestamp: now - 10_001 }),
+      ],
+      now,
+      10_000,
+    )
+    expect(result.map((v) => v.id)).toEqual(['внутри', 'на границе'])
+  })
+
+  it('оставляет события новее now (поток опережает тикающие часы)', () => {
+    const now = 100_000
+    const result = withinLastMs(
+      [makeViolation({ timestamp: now + 3_000 })],
+      now,
+      10_000,
+    )
+    expect(result).toHaveLength(1)
+  })
+
+  it('согласован с violationsOverTime: KPI = сумме корзин графика', () => {
+    const now = 100_000
+    const span = 10_000
+    const violations = [
+      makeViolation({ timestamp: now - 9_000 }),
+      makeViolation({ timestamp: now - 1_000 }),
+      makeViolation({ timestamp: now - 50_000 }), // старше окна
+    ]
+    const windowed = withinLastMs(violations, now, span)
+    const buckets = violationsOverTime(windowed, now, span, 10)
+    expect(windowed).toHaveLength(2)
+    expect(buckets.reduce((s, b) => s + b.count, 0)).toBe(windowed.length)
   })
 })
 

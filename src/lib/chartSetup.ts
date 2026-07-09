@@ -30,3 +30,7 @@ Chart.register(
 Chart.defaults.color = '#94a3b8'
 Chart.defaults.borderColor = 'rgba(148, 163, 184, 0.15)'
 Chart.defaults.font.family = "'Inter', system-ui, sans-serif"
+
+/** Акцент палитры (--accent) для датасетов без собственного цвета. */
+export const CHART_ACCENT = '#38bdf8'
+export const CHART_ACCENT_FILL = 'rgba(56, 189, 248, 0.15)'

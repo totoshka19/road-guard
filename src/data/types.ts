@@ -37,8 +37,9 @@ export const violationSchema = z.object({
 })
 export type Violation = z.infer<typeof violationSchema>
 
-/** Фильтры выборки нарушений (используются на этапе фильтров). */
+/** Фильтры выборки нарушений — аналог query-параметров REST-запроса. */
 export interface ViolationFilters {
+  cameraId?: string
   types?: ViolationType[]
   districts?: string[]
   since?: number // epoch ms, включительно

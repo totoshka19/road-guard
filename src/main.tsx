@@ -1,19 +1,17 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
+import { RouterProvider } from 'react-router/dom'
 import './styles/global.css'
 import './lib/chartSetup'
-import App from './App.tsx'
 import { store } from './app/store'
-import { bootstrap } from './app/bootstrap'
+import { router } from './app/router'
 
-// Начальная загрузка данных в стор (камеры + история нарушений).
-void bootstrap(store)
-
+// Начальные данные грузит RTK Query из RootLayout — отдельный bootstrap не нужен.
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
-      <App />
+      <RouterProvider router={router} />
     </Provider>
   </StrictMode>,
 )
