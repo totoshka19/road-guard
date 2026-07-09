@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { api } from '../../app/api'
 import type { Violation } from '../../data/types'
 
 /** Размер кольцевого буфера: храним последние N событий, старые вытесняем. */
@@ -12,6 +13,13 @@ const initialState: ViolationsState = {
   items: [],
 }
 
+/** История с «сервера» → буфер: новейшие первыми, обрезано до MAX_VIOLATIONS. */
+export function toBuffer(history: Violation[]): Violation[] {
+  return [...history]
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, MAX_VIOLATIONS)
+}
+
 const violationsSlice = createSlice({
   name: 'violations',
   initialState,
@@ -23,18 +31,23 @@ const violationsSlice = createSlice({
         state.items.pop()
       }
     },
-    /** Начальная история: сортируем (новейшие первыми) и обрезаем до буфера. */
-    setViolations(state, action: PayloadAction<Violation[]>) {
-      state.items = [...action.payload]
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, MAX_VIOLATIONS)
-    },
-    clearViolations(state) {
-      state.items = []
-    },
+  },
+  extraReducers: (builder) => {
+    /**
+     * Начальная история приезжает REST-запросом RTK Query — ею засеиваем
+     * буфер. Дальше он живёт только от потока (addViolation).
+     *
+     * Матчер привязан к `getViolations`, поэтому ответ `getCameraViolations`
+     * (страница камеры) сюда не попадёт и буфер не затрёт.
+     */
+    builder.addMatcher(
+      api.endpoints.getViolations.matchFulfilled,
+      (state, action) => {
+        state.items = toBuffer(action.payload)
+      },
+    )
   },
 })
 
-export const { addViolation, setViolations, clearViolations } =
-  violationsSlice.actions
+export const { addViolation } = violationsSlice.actions
 export default violationsSlice.reducer

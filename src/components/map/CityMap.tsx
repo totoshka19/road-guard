@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router'
 import { Layer, Map, Popup, Source } from 'react-map-gl/maplibre'
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre'
 import type { GeoJSONSource } from 'maplibre-gl'
@@ -7,6 +8,10 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { selectCamera } from '../../features/cameras/camerasSlice'
+import {
+  selectAllCameras,
+  selectSelectedCamera,
+} from '../../features/cameras/selectors'
 import { camerasToGeoJson } from '../../features/cameras/cameraGeoJson'
 import { recentViolationsToGeoJson } from '../../features/violations/violationGeoJson'
 import { selectFilteredViolations } from '../../features/stats/selectors'
@@ -31,10 +36,11 @@ const MAX_MAP_VIOLATIONS = 150
 
 export function CityMap() {
   const dispatch = useAppDispatch()
-  const cameras = useAppSelector((s) => s.cameras.items)
+  const cameras = useAppSelector(selectAllCameras)
   const violations = useAppSelector(selectFilteredViolations)
   const heatmap = useAppSelector((s) => s.ui.heatmap)
   const selectedId = useAppSelector((s) => s.cameras.selectedId)
+  const selectedCamera = useAppSelector(selectSelectedCamera)
   const mapRef = useRef<MapRef>(null)
   const [cursor, setCursor] = useState('grab')
 
@@ -42,10 +48,6 @@ export function CityMap() {
   const violationData = useMemo(
     () => recentViolationsToGeoJson(violations, MAX_MAP_VIOLATIONS),
     [violations],
-  )
-  const selectedCamera = useMemo(
-    () => cameras.find((camera) => camera.id === selectedId) ?? null,
-    [cameras, selectedId],
   )
   // Слой-подсветка выбранной камеры (фильтр зависит от выбора).
   const selectedLayerStyle = useMemo(
@@ -146,6 +148,12 @@ export function CityMap() {
         >
           <p className="camera-popup__name">{selectedCamera.name}</p>
           <p className="camera-popup__district">{selectedCamera.district}</p>
+          <Link
+            to={`/camera/${selectedCamera.id}`}
+            className="camera-popup__link"
+          >
+            Подробнее →
+          </Link>
         </Popup>
       )}
     </Map>
