@@ -4,6 +4,8 @@ import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { useGetCamerasQuery, useGetViolationsQuery } from '../app/api'
 import { CITY } from '../data/city'
 import { useViolationStream } from '../features/playback/useViolationStream'
+import { ThemeToggle } from '../features/ui/ThemeToggle'
+import { useThemeSync } from '../features/ui/useThemeSync'
 import { tick } from '../features/ui/uiSlice'
 
 /** Как часто обновляем общее «сейчас» для фильтров по времени и динамики. */
@@ -23,6 +25,7 @@ export function RootLayout() {
   useGetCamerasQuery()
   useGetViolationsQuery()
   useViolationStream()
+  useThemeSync()
 
   const playing = useAppSelector((s) => s.playback.playing)
 
@@ -44,14 +47,17 @@ export function RootLayout() {
             </p>
           </div>
         </Link>
-        <span
-          className={
-            playing ? 'status-pill' : 'status-pill status-pill--paused'
-          }
-        >
-          <span className="status-pill__dot" aria-hidden />
-          {playing ? 'Поток активен' : 'Поток на паузе'}
-        </span>
+        <div className="app-header__aside">
+          <ThemeToggle />
+          <span
+            className={
+              playing ? 'status-pill' : 'status-pill status-pill--paused'
+            }
+          >
+            <span className="status-pill__dot" aria-hidden />
+            {playing ? 'Поток активен' : 'Поток на паузе'}
+          </span>
+        </div>
       </header>
 
       <Outlet />

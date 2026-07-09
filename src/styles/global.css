@@ -109,6 +109,36 @@ body {
   box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
 }
 
+/* Правая группа в шапке: переключатель темы + статус потока. */
+.app-header__aside {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* Тело дашборда: карта + боковая лента событий. */
 .app-body {
   flex: 1;
@@ -776,14 +806,17 @@ body {
   text-align: center;
 }
 
-/* Светлая тема */
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f8fafc;
-    --bg-elevated: #ffffff;
-    --border: #e2e8f0;
-    --text: #0f172a;
-    --text-muted: #64748b;
-    color-scheme: light;
-  }
+/*
+ * Светлая тема. Атрибут data-theme ставит инлайн-скрипт в index.html до
+ * первой отрисовки, дальше его синхронизирует useThemeSync — поэтому
+ * системная настройка учитывается без @media и без вспышки чужой темы.
+ * Если скрипт не отработал (JS отключён), остаётся тёмная из :root.
+ */
+:root[data-theme='light'] {
+  --bg: #f8fafc;
+  --bg-elevated: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  color-scheme: light;
 }

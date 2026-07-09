@@ -9,6 +9,23 @@
       content="RoadGuard — real-time дашборд мониторинга дорожных нарушений на карте города."
     />
     <title>RoadGuard — мониторинг дорожных нарушений</title>
+    <script>
+      // Ставим тему до первой отрисовки, иначе при светлой системной теме
+      // мигнёт тёмная (значения по умолчанию в :root). Ключ и правила должны
+      // совпадать с src/lib/theme.ts — дальше атрибут ведёт useThemeSync.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('roadguard:theme')
+          var choice = stored === 'light' || stored === 'dark' ? stored : null
+          var dark = choice
+            ? choice === 'dark'
+            : matchMedia('(prefers-color-scheme: dark)').matches
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        } catch (e) {
+          // Приватный режим или заблокированный localStorage — остаёмся на :root.
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
