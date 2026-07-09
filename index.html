@@ -5,16 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: dark)"
-      content="#0b0f17"
-    />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: light)"
-      content="#f8fafc"
-    />
+    <!--
+      Один тег без media: браузер выбирал бы между media-вариантами по системной
+      настройке и не знал бы про ручной выбор темы. Значение ставит скрипт ниже
+      (до первой отрисовки) и дальше поддерживает applyTheme.
+    -->
+    <meta name="theme-color" content="#0b0f17" />
     <meta
       name="description"
       content="RoadGuard — real-time дашборд мониторинга дорожных нарушений на карте города."
@@ -22,8 +18,9 @@
     <title>RoadGuard — мониторинг дорожных нарушений</title>
     <script>
       // Ставим тему до первой отрисовки, иначе при светлой системной теме
-      // мигнёт тёмная (значения по умолчанию в :root). Ключ и правила должны
-      // совпадать с src/lib/theme.ts — дальше атрибут ведёт useThemeSync.
+      // мигнёт тёмная (значения по умолчанию в :root). Ключ, правило и цвета
+      // должны совпадать с src/lib/theme.ts — согласованность закреплена тестом.
+      // Дальше атрибут и meta ведёт useThemeSync через applyTheme.
       ;(function () {
         try {
           const stored = localStorage.getItem('roadguard:theme')
@@ -32,6 +29,8 @@
             ? choice === 'dark'
             : matchMedia('(prefers-color-scheme: dark)').matches
           document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+          const meta = document.querySelector('meta[name="theme-color"]')
+          if (meta) meta.setAttribute('content', dark ? '#0b0f17' : '#f8fafc')
         } catch {
           // Приватный режим или заблокированный localStorage — остаёмся на :root.
         }

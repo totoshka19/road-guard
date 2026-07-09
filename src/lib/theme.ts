@@ -12,6 +12,17 @@ export const THEME_STORAGE_KEY = 'roadguard:theme'
 const DARK_QUERY = '(prefers-color-scheme: dark)'
 
 /**
+ * Цвет системного UI браузера: адресная строка на мобильном, титлбар
+ * установленного PWA. Совпадает с `--bg` соответствующей темы; те же значения
+ * продублированы в инлайн-скрипте index.html — иначе до загрузки бандла
+ * хром браузера был бы не того цвета.
+ */
+export const THEME_COLORS: Record<ResolvedTheme, string> = {
+  dark: '#0b0f17',
+  light: '#f8fafc',
+}
+
+/**
  * Чистое правило разрешения темы. Выбор `system` раскрывается в текущую
  * системную настройку; остальные значения говорят сами за себя.
  */
@@ -51,7 +62,14 @@ export function watchSystemTheme(
   return () => query.removeEventListener('change', handler)
 }
 
-/** Вся тема переключается одним атрибутом на <html> — см. global.css. */
+/**
+ * Тема переключается одним атрибутом на <html> (см. global.css). Отдельно
+ * ведём meta[theme-color]: без media-вариантов, иначе браузер выбирал бы цвет
+ * по системной настройке и игнорировал ручной выбор пользователя.
+ */
 export function applyTheme(resolved: ResolvedTheme): void {
   document.documentElement.dataset.theme = resolved
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', THEME_COLORS[resolved])
 }

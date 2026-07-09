@@ -32,10 +32,15 @@ export function useInitialData(): InitialDataStatus {
   const cameras = useGetCamerasQuery()
   const violations = useGetViolationsQuery()
 
+  // Зависим от самих refetch (они стабильны), а не от объектов результата:
+  // те меняются при каждой смене состояния запроса.
+  const { refetch: refetchCameras } = cameras
+  const { refetch: refetchViolations } = violations
+
   const retry = useCallback(() => {
-    void cameras.refetch()
-    void violations.refetch()
-  }, [cameras, violations])
+    void refetchCameras()
+    void refetchViolations()
+  }, [refetchCameras, refetchViolations])
 
   return {
     isLoading: cameras.isLoading || violations.isLoading,
