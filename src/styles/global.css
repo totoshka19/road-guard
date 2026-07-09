@@ -668,14 +668,28 @@ body {
   white-space: nowrap;
 }
 
-/* Тёмная тема для контролов и попапа MapLibre. */
-.maplibregl-ctrl-attribution {
-  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+/*
+ * Контролы и попап MapLibre под тему приложения.
+ *
+ * Два подвоха. Класс — `maplibregl-ctrl-attrib`, а не `…-attribution`:
+ * правило на второй молча ничего не делало. И maplibre-gl.css грузится позже
+ * global.css (он импортирован внутри ленивого чанка карты), причём использует
+ * ровно те же классы — при равной специфичности выигрывает он. Поэтому здесь
+ * третий класс, и отдельно перекрыт compact-вариант с непрозрачным фоном.
+ */
+.maplibregl-map .maplibregl-ctrl.maplibregl-ctrl-attrib,
+.maplibregl-map .maplibregl-ctrl-attrib.maplibregl-compact {
+  background-color: color-mix(in srgb, var(--bg-elevated) 85%, transparent);
   color: var(--text-muted);
 }
 
-.maplibregl-ctrl-attribution a {
+.maplibregl-map .maplibregl-ctrl-attrib a {
   color: var(--text-muted);
+}
+
+/* Иконка «i» у свёрнутой атрибуции — тёмный SVG, на тёмной подложке не видна. */
+:root[data-theme='dark'] .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
 }
 
 .camera-popup .maplibregl-popup-content {
@@ -819,4 +833,87 @@ body {
   --text: #0f172a;
   --text-muted: #64748b;
   color-scheme: light;
+}
+
+/*
+ * Мобильная раскладка.
+ *
+ * На десктопе оболочка фиксирована в 100dvh, а прокручиваются отдельные
+ * панели внутри неё. На узком экране такая модель вредна: вложенные скроллы
+ * мешают жестам, а адресная строка браузера прячется только при прокрутке
+ * корневого документа. Поэтому здесь карта получает фиксированную высоту,
+ * панель встаёт под неё, и скроллится вся связка целиком — а внутренние
+ * overflow-y гасим, иначе получим скролл внутри скролла.
+ */
+@media (max-width: 768px) {
+  .app-body {
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-main--map {
+    flex: none;
+    height: 45vh;
+    min-height: 16rem;
+  }
+
+  /*
+   * flex: none обязателен. Иначе колоночный флекс сожмёт панель ниже её
+   * содержательной высоты, и контент полезет наружу вместо того, чтобы
+   * задать высоту прокрутке .app-body.
+   */
+  .sidebar {
+    width: 100%;
+    flex: none;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .sidebar__panel--scroll,
+  .feed,
+  .feed__list {
+    flex: none;
+    overflow-y: visible;
+  }
+
+  /* Оверлеи карты: на 375px панель со сводкой и кнопка heatmap не разъезжались. */
+  .map-overlay {
+    max-width: 9.5rem;
+    padding: 0.6rem 0.7rem;
+  }
+
+  .map-overlay__hint {
+    display: none;
+  }
+
+  /* «ФОТОВИДЕОФИКСАЦИИ» — одно длинное слово: разрядка выталкивала его за рамку. */
+  .map-overlay__eyebrow {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+  }
+
+  .app-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .page {
+    padding: 1rem;
+  }
+}
+
+/* Совсем узкие экраны: шапке нужно место под бренд. */
+@media (max-width: 480px) {
+  .brand__subtitle {
+    display: none;
+  }
+
+  /* Состояние потока дублирует кнопка плейбека — пилюлю можно убрать. */
+  .status-pill {
+    display: none;
+  }
+
+  .kpis {
+    grid-template-columns: 1fr 1fr;
+  }
 }

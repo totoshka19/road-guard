@@ -94,6 +94,23 @@ export function CityMap() {
     [dispatch],
   )
 
+  /**
+   * Сворачиваем атрибуцию сразу после загрузки.
+   *
+   * У MapLibre `attributionControl` по умолчанию `{ compact: true }`, и при
+   * переходе в компактный режим он добавляет разом `maplibregl-compact` и
+   * `maplibregl-compact-show`, то есть показывает плашку развёрнутой. Сама она
+   * сворачивается лишь после первого перетаскивания карты. Опции «свернуть
+   * изначально» нет, поэтому снимаем класс руками — клик по «i» по-прежнему
+   * разворачивает её, так что указание источника остаётся доступным.
+   */
+  const onLoad = useCallback(() => {
+    mapRef.current
+      ?.getContainer()
+      .querySelector('.maplibregl-ctrl-attrib')
+      ?.classList.remove('maplibregl-compact-show')
+  }, [])
+
   // Курсор-«рука» над кликабельными фичами. Обновляем только при смене,
   // чтобы onMouseMove не дёргал ре-рендер на каждый пиксель.
   const onMouseMove = useCallback((event: MapLayerMouseEvent) => {
@@ -118,6 +135,7 @@ export function CityMap() {
       style={{ width: '100%', height: '100%' }}
       interactiveLayerIds={INTERACTIVE_LAYERS}
       cursor={cursor}
+      onLoad={onLoad}
       onClick={onClick}
       onMouseMove={onMouseMove}
     >
